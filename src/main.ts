@@ -1,15 +1,12 @@
-import { InjectionToken } from "./di/injection-token";
-import { Injectable } from "./di/injectable.decorator";
-import { Injector } from "./di/injector";
-import { Inject } from "./di/inject.decorator";
+import { InjectionToken, Injectable, Injector, Inject } from './di/index';
 
-const token = new InjectionToken("new token");
-const token1 = new InjectionToken("new token 1");
+const token = new InjectionToken('new token');
+const token1 = new InjectionToken('new token 1');
 
 @Injectable()
 class FirstService {
 	public helloWorld(): void {
-		console.log("Hello world!");
+		console.log('Hello world!');
 	}
 }
 

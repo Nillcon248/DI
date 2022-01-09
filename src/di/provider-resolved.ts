@@ -11,7 +11,7 @@ import {
 	ProviderBase,
 	ProviderType,
 	ValueProvider,
-} from "./shared";
+} from './shared';
 
 export class ResolvedProviderFactory {
 	public static create(provider: Provider): ResolvedProvider {

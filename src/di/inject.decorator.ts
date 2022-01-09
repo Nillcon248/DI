@@ -1,4 +1,4 @@
-import { DEPENDENCIES_DEF, ProviderType } from "./shared";
+import { DEPENDENCIES_DEF, ProviderType } from './shared';
 
 export function Inject(provider: ProviderType) {
 	return function (

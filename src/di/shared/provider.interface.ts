@@ -1,4 +1,4 @@
-import { InjectionToken } from "../injection-token";
+import { InjectionToken } from '../injection-token';
 
 export const InstanceProvider = Function;
 

@@ -1,2 +1,2 @@
-export * from "./provider.interface";
-export * from "./metadata-keys";
+export * from './provider.interface';
+export * from './metadata-keys';

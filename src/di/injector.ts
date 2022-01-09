@@ -1,5 +1,5 @@
-import { ResolvedProvider, ResolvedProviderFactory } from "./provider-resolved";
-import { Provider, ProviderType } from "./shared";
+import { ResolvedProvider, ResolvedProviderFactory } from './provider-resolved';
+import { Provider, ProviderType } from './shared';
 
 export class InjectorProvider {
 	public get dependencyTokens(): ProviderType[] | null {

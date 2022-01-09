@@ -1,5 +1,5 @@
-import "reflect-metadata";
-import { DEPENDENCIES_DEF, PARAMETER_TYPES } from "./shared";
+import 'reflect-metadata';
+import { DEPENDENCIES_DEF, PARAMETER_TYPES } from './shared';
 
 export function Injectable(): any {
 	return (targetClass: Function) => {

@@ -1,4 +1,5 @@
 {
 	"useTabs": true,
-	"editor.wordWrap": "wordWrapColumn"
+	"editor.wordWrap": "wordWrapColumn",
+	"singleQuote": true
 }
