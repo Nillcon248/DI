@@ -10,44 +10,72 @@ export class InjectorProvider {
 
 	constructor(private readonly resolvedProvider: ResolvedProvider) {}
 
-	public getInstance<T>(dependencies: unknown[]): T {
+	public getInstance(dependencies: unknown[]): unknown {
 		if (!this.instance) {
-			this.instance = this.resolvedProvider.factory<T>(dependencies);
+			this.instance = this.resolvedProvider.factory(dependencies);
 		}
 
-		return this.instance as T;
+		return this.instance;
+	}
+}
+
+export class InjectorProviderWeakMap extends WeakMap<
+	ProviderType,
+	InjectorProvider[]
+> {
+	add(key: ProviderType, value: InjectorProvider): this {
+		const previousValue: InjectorProvider[] = this.get(key) || [];
+
+		previousValue.push(value);
+		super.set(key, previousValue);
+
+		return this;
 	}
 }
 
 export class Injector {
 	constructor(
-		protected providersMap: WeakMap<ProviderType, InjectorProvider>,
+		protected providersMap: InjectorProviderWeakMap,
 		protected parent?: Injector
 	) {}
 
 	public static create(providers: Provider[], parent?: Injector): Injector {
-		const providersMap = new WeakMap<ProviderType, InjectorProvider>();
+		const providersMap = new InjectorProviderWeakMap();
 
 		providers.forEach((provider: Provider) => {
 			const resolvedProvider = ResolvedProviderFactory.create(provider);
 			const injectorProvider = new InjectorProvider(resolvedProvider);
 
-			providersMap.set(resolvedProvider.token, injectorProvider);
+			providersMap.add(resolvedProvider.token, injectorProvider);
 		});
 
 		return new Injector(providersMap, parent);
 	}
 
 	public get<T>(token: ProviderType): T {
-		const provider = this.providersMap.get(token);
+		const providers = this.providersMap.get(token);
 
-		if (provider) {
+		if (providers) {
+			const providerInstances = this.getProviderInstances(providers);
+
+			return this.getFirstItemIfAloneInArray(providerInstances) as T;
+		}
+
+		return this.parent?.get<T>(token);
+	}
+
+	private getProviderInstances(providers: InjectorProvider[]): unknown[] {
+		return providers.map((provider: InjectorProvider) => {
 			const dependencyInstances = this.getDependencyInstances(provider);
 
 			return provider.getInstance(dependencyInstances);
-		}
+		});
+	}
 
-		return this.parent.get(token);
+	private getFirstItemIfAloneInArray(providerInstances: unknown[]): any {
+		return providerInstances.length > 1
+			? providerInstances
+			: providerInstances[0];
 	}
 
 	private getDependencyInstances(provider: InjectorProvider): unknown[] {

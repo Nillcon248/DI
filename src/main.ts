@@ -1,7 +1,6 @@
 import { InjectionToken, Injectable, Injector, Inject } from './di/index';
 
-const token = new InjectionToken('new token');
-const token1 = new InjectionToken('new token 1');
+const token = new InjectionToken('token for non unique providers');
 
 @Injectable()
 class FirstService {
@@ -31,11 +30,11 @@ const injector = Injector.create(
 		SecondService,
 		{
 			provide: token,
-			useValue: 15,
+			useValue: 'First value',
 		},
 		{
-			provide: token1,
-			useValue: 123,
+			provide: token,
+			useValue: 'Second value',
 		},
 	],
 	injectorParent
