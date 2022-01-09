@@ -8,7 +8,6 @@ export interface InstanceProvider extends Function {
 
 export interface ProviderBase {
 	provide: ProviderType;
-	multi?: boolean;
 }
 
 export interface ClassProvider extends ProviderBase {

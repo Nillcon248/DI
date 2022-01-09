@@ -28,15 +28,11 @@ export class Injector {
 	public static create(providers: Provider[], parent?: Injector): Injector {
 		const providersMap = new WeakMap<ProviderType, InjectorProvider>();
 
-		providers.map((provider: Provider) => {
+		providers.forEach((provider: Provider) => {
 			const resolvedProvider = ResolvedProviderFactory.create(provider);
 			const injectorProvider = new InjectorProvider(resolvedProvider);
 
-			const previousValue = providersMap.get(resolvedProvider.token) || [];
-
-			if (previousValue) {
-				providersMap.set(resolvedProvider.token, injectorProvider);
-			}
+			providersMap.set(resolvedProvider.token, injectorProvider);
 		});
 
 		return new Injector(providersMap, parent);

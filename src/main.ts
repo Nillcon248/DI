@@ -7,39 +7,43 @@ const token = new InjectionToken("new token");
 const token1 = new InjectionToken("new token 1");
 
 @Injectable()
-class LolService {
-	public hello(): void {
+class FirstService {
+	public helloWorld(): void {
 		console.log("Hello world!");
 	}
 }
 
 @Injectable()
-class SomeService {
+class SecondService {
 	constructor(
-		public lol: LolService, //
+		public firstService: FirstService, //
 		@Inject(token) public value: number
 	) {
 		console.log(value);
 	}
 
 	public helloWorld(): void {
-		this.lol.hello();
+		this.firstService.helloWorld();
 	}
 }
 
-const injector = Injector.create([
-	SomeService,
-	LolService,
-	{
-		provide: token,
-		useValue: 15,
-	},
-	{
-		provide: token,
-		useValue: 123,
-	},
-]);
+const injectorParent = Injector.create([FirstService]);
 
-const someService: SomeService = injector.get<SomeService>(SomeService);
+const injector = Injector.create(
+	[
+		SecondService,
+		{
+			provide: token,
+			useValue: 15,
+		},
+		{
+			provide: token1,
+			useValue: 123,
+		},
+	],
+	injectorParent
+);
+
+const someService = injector.get<SecondService>(SecondService);
 
 someService.helloWorld();

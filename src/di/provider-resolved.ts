@@ -38,6 +38,8 @@ export abstract class ResolvedProvider {
 	public abstract get dependencies(): ProviderType[] | null;
 
 	public abstract factory<T>(dependencies: unknown[]): T;
+
+	protected readonly provider: Provider;
 }
 
 export class ResolvedInstanceProvider extends ResolvedProvider {
@@ -85,7 +87,7 @@ export class ResolvedValueProvider extends ResolvedProvider {
 		return null;
 	}
 
-	constructor(private readonly provider: ValueProvider) {
+	constructor(protected readonly provider: ValueProvider) {
 		super();
 	}
 
@@ -103,7 +105,7 @@ export class ResolvedFactoryProvider extends ResolvedProvider {
 		return this.provider.deps;
 	}
 
-	constructor(private readonly provider: FactoryProvider) {
+	constructor(protected readonly provider: FactoryProvider) {
 		super();
 	}
 
