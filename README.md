@@ -16,10 +16,10 @@ Use static method ```create```  in ```Injector``` class for create injector with
 
 ```js
 const injector = Injector.create(
-	[
-		FirstService,
-		SecondService
-	],
+  [
+    FirstService,
+    SecondService
+  ],
 );
 ```
 
@@ -28,9 +28,9 @@ For inject one class into another, set injectable class into constructor of clas
 ```js
 @Injectable()
 class SecondService {
-	constructor(
-		private readonly firstService: FirstService
-	) {}
+  constructor(
+    private readonly firstService: FirstService
+  ) {}
 }
 ```
 
@@ -46,13 +46,13 @@ You can create token and provide ```class|value|factory```.
 const token = new InjectionToken('some description');
 
 const injector = Injector.create(
-	[
-		...
-		{
-			provide: token,
-			useValue: 'some text'
-		},
-	],
+  [
+    ...
+    {
+      provide: token,
+      useValue: 'some text'
+    },
+  ],
 );
 ```
 
@@ -61,10 +61,10 @@ And for provide it into class use ```@Inject``` decorator.
 ```js
 @Injectable()
 class SecondService {
-	constructor(
-		@Inject(token)
-		private readonly someText: string
-	) {}
+  constructor(
+    @Inject(token)
+    private readonly someText: string
+  ) {}
 }
 ```
 
@@ -73,26 +73,26 @@ You can provide some providers by one token, then you will get array of values.
 
 ```js
 const injector = Injector.create(
-	[
-		...
-		{
-			provide: token,
-			useValue: 'some text'
-		},
-			{
-			provide: token,
-			useValue: 'some new text'
-		},
-	],
+  [
+    ...
+    {
+      provide: token,
+      useValue: 'some text'
+    },
+      {
+      provide: token,
+      useValue: 'some new text'
+    },
+  ],
 );
 
 @Injectable()
 class SecondService {
-	constructor(
-		@Inject(token)
-		private readonly someText: string
-	) {
-		console.log(this.someText); // ['some text', 'some new text']
-	}
+  constructor(
+    @Inject(token)
+    private readonly someText: string
+  ) {
+    console.log(this.someText); // ['some text', 'some new text']
+  }
 }
 ```
