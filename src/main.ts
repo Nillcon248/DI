@@ -1,9 +1,10 @@
 import { InjectionToken } from "./di/injection-token";
-import { Injectable } from "./di/injectable";
+import { Injectable } from "./di/injectable.decorator";
 import { Injector } from "./di/injector";
-import { Inject } from "./di/inject";
+import { Inject } from "./di/inject.decorator";
 
 const token = new InjectionToken("new token");
+const token1 = new InjectionToken("new token 1");
 
 @Injectable()
 class LolService {
@@ -26,15 +27,19 @@ class SomeService {
 	}
 }
 
-const injector = Injector.resolve([
+const injector = Injector.create([
 	SomeService,
 	LolService,
 	{
 		provide: token,
 		useValue: 15,
 	},
+	{
+		provide: token,
+		useValue: 123,
+	},
 ]);
 
-const someService: SomeService = injector.get(SomeService);
+const someService: SomeService = injector.get<SomeService>(SomeService);
 
 someService.helloWorld();

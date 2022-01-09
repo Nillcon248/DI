@@ -1,127 +1,62 @@
-import { DEPENDENCIES_DEF } from "./constants";
-import {
-  NormalizedProvider,
-  Provider,
-  isTypeProvider,
-  isClassProvider,
-  isValueProvider,
-  isFactoryProvider,
-} from "./interfaces";
-import { ProviderType } from "./provider-type";
+import { ResolvedProvider, ResolvedProviderFactory } from "./provider-resolved";
+import { Provider, ProviderType } from "./shared";
 
-export class ResolvedProvider {
-  private created: any;
+export class InjectorProvider {
+	public get dependencyTokens(): ProviderType[] | null {
+		return this.resolvedProvider.dependencies;
+	}
 
-  constructor(
-    public token: ProviderType,
-    public resolvedFactory: ResolvedReflectiveFactory
-  ) {}
+	private instance: unknown;
 
-  public getOrCreate(depsInstances: any[]): any {
-    if (!this.created) {
-      this.created = this.resolvedFactory.factory(depsInstances);
-    }
+	constructor(private readonly resolvedProvider: ResolvedProvider) {}
 
-    return this.created;
-  }
-}
+	public getInstance<T>(dependencies: unknown[]): T {
+		if (!this.instance) {
+			this.instance = this.resolvedProvider.factory<T>(dependencies);
+		}
 
-export class ResolvedReflectiveFactory {
-  constructor(public factory: Function, public dependencies: ProviderType[]) {}
+		return this.instance as T;
+	}
 }
 
 export class Injector {
-  constructor(
-    protected providers: WeakMap<ProviderType, ResolvedProvider>,
-    protected parent?: Injector
-  ) {}
+	constructor(
+		protected providersMap: WeakMap<ProviderType, InjectorProvider>,
+		protected parent?: Injector
+	) {}
 
-  public static resolve(providers: Provider[], parent?: Injector): Injector {
-    const normalizedProviders: NormalizedProvider[] =
-      normalizeProviders(providers);
-    const resolvedProvides: ResolvedProvider[] =
-      resolveNormalizedProvides(normalizedProviders);
-    const resolvedProviderMap: WeakMap<ProviderType, ResolvedProvider> =
-      getResolvedProviderMap(resolvedProvides);
+	public static create(providers: Provider[], parent?: Injector): Injector {
+		const providersMap = new WeakMap<ProviderType, InjectorProvider>();
 
-    return new Injector(resolvedProviderMap, parent);
-  }
+		providers.map((provider: Provider) => {
+			const resolvedProvider = ResolvedProviderFactory.create(provider);
+			const injectorProvider = new InjectorProvider(resolvedProvider);
 
-  public get<T>(token: ProviderType) {
-    const provider = this.providers.get(token);
+			const previousValue = providersMap.get(resolvedProvider.token) || [];
 
-    if (provider) {
-      const deps = [];
+			if (previousValue) {
+				providersMap.set(resolvedProvider.token, injectorProvider);
+			}
+		});
 
-      provider?.resolvedFactory.dependencies?.forEach((dep) => {
-        deps.push(this.get(dep));
-      });
+		return new Injector(providersMap, parent);
+	}
 
-      return provider.getOrCreate(deps);
-    }
+	public get<T>(token: ProviderType): T {
+		const provider = this.providersMap.get(token);
 
-    return this.parent.get(token);
-  }
-}
+		if (provider) {
+			const dependencyInstances = this.getDependencyInstances(provider);
 
-function normalizeProviders(providers: Provider[]): NormalizedProvider[] {
-  return providers.map(getNormalizedProvider);
-}
+			return provider.getInstance(dependencyInstances);
+		}
 
-function getNormalizedProvider(provider: Provider): NormalizedProvider {
-  if (isTypeProvider(provider)) {
-    return {
-      provide: provider,
-      useClass: provider,
-    };
-  }
+		return this.parent.get(token);
+	}
 
-  return provider;
-}
-
-function resolveNormalizedProvides(
-  providers: NormalizedProvider[]
-): ResolvedProvider[] {
-  return providers.map((provider: NormalizedProvider) => {
-    return new ResolvedProvider(
-      provider.provide,
-      getFactoryForProvider(provider)
-    );
-  });
-}
-
-function getFactoryForProvider(
-  provider: NormalizedProvider
-): ResolvedReflectiveFactory {
-  let factory: Function;
-  let dependencies: ProviderType[];
-
-  if (isClassProvider(provider)) {
-    factory = (dependencies: ProviderType[]) =>
-      new provider.useClass(...dependencies);
-    dependencies = provider.useClass[DEPENDENCIES_DEF];
-  }
-
-  if (isValueProvider(provider)) {
-    factory = () => provider.useValue;
-  }
-
-  if (isFactoryProvider(provider)) {
-    factory = provider.useFactory;
-    dependencies = provider.deps;
-  }
-
-  return new ResolvedReflectiveFactory(factory, dependencies);
-}
-
-function getResolvedProviderMap(
-  providers: ResolvedProvider[]
-): WeakMap<ProviderType, ResolvedProvider> {
-  const providerMap = new WeakMap<ProviderType, ResolvedProvider>();
-
-  providers.forEach((provider: ResolvedProvider) => {
-    providerMap.set(provider.token, provider);
-  });
-
-  return providerMap;
+	private getDependencyInstances(provider: InjectorProvider): unknown[] {
+		return provider.dependencyTokens?.map((token: ProviderType) =>
+			this.get(token)
+		);
+	}
 }
